@@ -8,7 +8,7 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
-MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modelo84.h5")
+MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modelo92.h5")
 
 class AplicacionIctericia:
     def __init__(self, root):
