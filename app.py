@@ -77,7 +77,15 @@ class AplicacionIctericia:
         """Carga el modelo Keras en la instancia"""
         try:
             from keras.models import load_model
-            self.model = load_model(MODEL_PATH, compile=False)
+            from keras.layers import Dense
+            import tensorflow as tf
+            
+            def custom_dense(**kwargs):
+                kwargs.pop('quantization_config', None)
+                return Dense(**kwargs)
+            
+            custom_objects = {'Dense': custom_dense}
+            self.model = load_model(MODEL_PATH, compile=False, custom_objects=custom_objects)
             print("Modelo cargado correctamente")
         except Exception as e:
             print(f"Error cargando modelo: {e}")
@@ -150,13 +158,16 @@ class AplicacionIctericia:
                 self.status_bar.config(text="Error: Modelo no disponible")
                 return
             
-            img_modelo = cv2.resize(img, (224, 224)).astype('float32') / 255.0
+            img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            img_modelo = cv2.resize(img_rgb, (224, 224)).astype('float32') / 255.0
             img_array = np.expand_dims(img_modelo, axis=0)
             
             prediccion = self.model.predict(img_array, verbose=0)
-            probabilidad = prediccion[0][0]
+            probabilidad = 1 - prediccion[0][0]
             
-            if probabilidad > 0.5:
+            print(f"DEBUG - Valor predicción: {probabilidad:.4f}")
+            
+            if probabilidad > 0.6:
                 resultado = "⚠️ ICTERICIA DETECTADA"
                 color = "red"
                 confianza = f"{probabilidad*100:.2f}%"
